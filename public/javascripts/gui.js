@@ -1841,9 +1841,7 @@ IDE_Morph.makeSocket = function (myself, shareboxId) {
         console.log("[SOCKET-RECEIVE] ANNOUNCEMENT: \"" + data.announcement + "\" from " + data.room);
         console.log(tempIdentifier);
         if (data.room != tempIdentifier) {
-            alert(data.announcement);
-            myself.sharer.socket.emit('ANNOUNCEMENT_RECEIVED', data);
-            console.log("[SOCKET-SEND] ANNOUNCEMENT_RECEIVED: " + JSON.stringify(data));
+            myself.showAnnouncementReceivedPopup(data);
         }
 
     }.bind(sharer));
@@ -1852,7 +1850,7 @@ IDE_Morph.makeSocket = function (myself, shareboxId) {
         if (tempIdentifier == data.room) {
             console.log("[SOCKET-RECEIVE] ALL_ANNOUNCEMENT_RECEIVED: \"" + data.announcement + "\" from " + data.room);
             console.log(tempIdentifier);
-            alert("All members in your sharebox have received and read the announcement!");
+            myself.showAllReceivedNotificationPopup(data);
         }
     }.bind(sharer));
     
@@ -3420,6 +3418,168 @@ IDE_Morph.prototype.showAnnounceFailurePopup = function() {
     this.announceFailurePopup.fixLayout();
     this.announceFailurePopup.popUp(world);
 };
+
+IDE_Morph.prototype.showAnnouncementReceivedPopup = function(data) {
+    var world = this.world();
+    var myself = this;
+    var popupWidth = 400;
+    var popupHeight = 300;
+
+    if (this.announcementReceivedPopup) {
+        this.announcementReceivedPopup.destroy();
+    }
+    this.announcementReceivedPopup = new DialogBoxMorph();
+    this.announcementReceivedPopup.setExtent(new Point(popupWidth, popupHeight));
+
+    // close dialog button
+    button = new PushButtonMorph(
+        this,
+        null,
+        (String.fromCharCode("0xf00d")),
+        null,
+        null,
+        null,
+        "redCircleIconButton"
+    );
+    button.setRight(this.announcementReceivedPopup.right() - 3);
+    button.setTop(this.announcementReceivedPopup.top() + 2);
+    button.action = function () {
+        myself.announcementReceivedPopup.cancel();
+        myself.sharer.socket.emit('ANNOUNCEMENT_RECEIVED', data);
+        console.log("[SOCKET-SEND] ANNOUNCEMENT_RECEIVED: " + JSON.stringify(data));
+    };
+    button.drawNew();
+    button.fixLayout();
+    this.announcementReceivedPopup.add(button);
+
+    // add title
+    this.announcementReceivedPopup.labelString = "Announcement";
+    this.announcementReceivedPopup.createLabel();
+
+    // failure image
+    var announcementImage = new Morph();
+    announcementImage.texture = 'images/notification.png';
+    announcementImage.drawNew = function () {
+        this.image = newCanvas(this.extent());
+        var context = this.image.getContext('2d');
+        var picBgColor = myself.announcementReceivedPopup.color;
+        context.fillStyle = picBgColor.toString();
+        context.fillRect(0, 0, this.width(), this.height());
+        if (this.texture) {
+            this.drawTexture(this.texture);
+        }
+    };
+
+    announcementImage.setExtent(new Point(129, 123));
+    announcementImage.setCenter(this.announcementReceivedPopup.center());
+    announcementImage.setTop(this.announcementReceivedPopup.top() + 40);
+    this.announcementReceivedPopup.add(announcementImage);
+
+    // announcement message
+    txt = new TextMorph("Announcement: \n" + data.announcement);
+
+
+    txt.setCenter(this.announcementReceivedPopup.center());
+    txt.setTop(announcementImage.bottom() + 20);
+    this.announcementReceivedPopup.add(txt);
+    txt.drawNew();
+
+    // "Received" button, closes the dialog.
+    okButton = new PushButtonMorph(null, null, "Received :)", null, null, null, "green");
+    okButton.setCenter(this.announcementReceivedPopup.center());
+    okButton.setBottom(this.announcementReceivedPopup.bottom() - 10);
+    okButton.action = function() {
+        myself.announcementReceivedPopup.cancel();
+
+        myself.sharer.socket.emit('ANNOUNCEMENT_RECEIVED', data);
+        console.log("[SOCKET-SEND] ANNOUNCEMENT_RECEIVED: " + JSON.stringify(data));
+    };
+    this.announcementReceivedPopup.add(okButton);
+
+    // popup
+    this.announcementReceivedPopup.drawNew();
+    this.announcementReceivedPopup.fixLayout();
+    this.announcementReceivedPopup.popUp(world);
+};
+
+
+IDE_Morph.prototype.showAllReceivedNotificationPopup = function(data) {
+    var world = this.world();
+    var myself = this;
+    var popupWidth = 400;
+    var popupHeight = 300;
+
+    if (this.allReceivedNotificationPopup) {
+        this.allReceivedNotificationPopup.destroy();
+    }
+    this.allReceivedNotificationPopup = new DialogBoxMorph();
+    this.allReceivedNotificationPopup.setExtent(new Point(popupWidth, popupHeight));
+
+    // close dialog button
+    button = new PushButtonMorph(
+        this,
+        null,
+        (String.fromCharCode("0xf00d")),
+        null,
+        null,
+        null,
+        "redCircleIconButton"
+    );
+    button.setRight(this.allReceivedNotificationPopup.right() - 3);
+    button.setTop(this.allReceivedNotificationPopup.top() + 2);
+    button.action = function () {
+        myself.allReceivedNotificationPopup.cancel();
+    };
+    button.drawNew();
+    button.fixLayout();
+    this.allReceivedNotificationPopup.add(button);
+
+    // add title
+    this.allReceivedNotificationPopup.labelString = "Announcement";
+    this.allReceivedNotificationPopup.createLabel();
+
+    // failure image
+    var announcementImage = new Morph();
+    announcementImage.texture = 'images/notification.png';
+    announcementImage.drawNew = function () {
+        this.image = newCanvas(this.extent());
+        var context = this.image.getContext('2d');
+        var picBgColor = myself.allReceivedNotificationPopup.color;
+        context.fillStyle = picBgColor.toString();
+        context.fillRect(0, 0, this.width(), this.height());
+        if (this.texture) {
+            this.drawTexture(this.texture);
+        }
+    };
+
+    announcementImage.setExtent(new Point(129, 123));
+    announcementImage.setCenter(this.allReceivedNotificationPopup.center());
+    announcementImage.setTop(this.allReceivedNotificationPopup.top() + 40);
+    this.allReceivedNotificationPopup.add(announcementImage);
+
+    // announcement message
+    txt = new TextMorph("All members in your sharebox have read the announcement: \n\"" + data.announcement + "\"!");
+
+
+    txt.setCenter(this.allReceivedNotificationPopup.center());
+    txt.setTop(announcementImage.bottom() + 20);
+    this.allReceivedNotificationPopup.add(txt);
+    txt.drawNew();
+
+    // "Got it!" button, closes the dialog.
+    okButton = new PushButtonMorph(null, null, "Got it!", null, null, null, "green");
+    okButton.setCenter(this.allReceivedNotificationPopup.center());
+    okButton.setBottom(this.allReceivedNotificationPopup.bottom() - 10);
+    okButton.action = function() {
+        myself.allReceivedNotificationPopup.cancel();
+    };
+    this.allReceivedNotificationPopup.add(okButton);
+
+    // popup
+    this.allReceivedNotificationPopup.drawNew();
+    this.allReceivedNotificationPopup.fixLayout();
+    this.allReceivedNotificationPopup.popUp(world);
+}
 
 
 
