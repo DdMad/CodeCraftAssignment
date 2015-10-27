@@ -34,7 +34,9 @@ server.on('listening', onListening);
 
 var io = require('socket.io')(server);
 
-var clients = {}
+var clients = {};
+
+var announcementReceived = {};
 
 io.sockets.on('connection', function(socket){
 
@@ -296,6 +298,26 @@ io.sockets.on('connection', function(socket){
 				io.to(roomKey).emit('UPDATE_MEMBERS', clients[roomKey])
 			};
 			io.emit('SOCKET_CONTROL_UPDATE', clients);
+		})
+
+		socket.on('ANNOUNCE', function(data) {
+			console.log("announce");
+			console.log(data.announcement);
+			console.log(data.room);
+
+			announcementReceived[data.room] = 1;
+			io.to(data.room).emit('ALERT_ANNOUNCEMENT', data);
+		})
+
+		socket.on('ANNOUNCEMENT_RECEIVED', function(data) {
+			console.log("one has received and read the announcement");
+
+			announcementReceived[data.room]++;
+			if (announcementReceived[data.room] >= clients[data.room].members.length) {
+				console.log("All have received");
+
+				io.to(data.room).emit('ALL_ANNOUNCEMENT_RECEIVED', data);
+			}
 		})
 
 });
