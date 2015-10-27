@@ -1,4 +1,12 @@
-Announcement feature for CodeCraft
+Announcement feature for CodeCraft from Team09
+
+Member Name				Matric. No.
+Huang Ziyu				A0119456Y
+Narinderpal Singh Dhillon		A0097416X
+Wang Zhipeng				A0119414L
+Zhang Ji				A0119391A
+
+
 
 Task 1 folder contain the code that the announcement will popup using JavaScript native popup box (alert).
 Changes:
